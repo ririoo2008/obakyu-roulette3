@@ -47,7 +47,7 @@ footer{text-align:center;color:#aaa;font-size:10px;letter-spacing:.09em;margin-t
 <div id="stops" class="stops" aria-label="抽選された停車駅"></div>
 <div class="actions"><button id="draw" type="button">ルーレットを回す</button><button id="copy" type="button" disabled>結果をコピー</button></div>
 <div class="status" id="status" role="status"></div>
-<p class="note">停車駅数を2〜6から抽選し、行き先を重複なしで選びます。<br>各停車駅の抽選に2秒かかります。</p>
+<p class="note">停車駅数を3〜6から抽選し、1駅目は指定された駅から選び、以降は重複なしで抽選します。<br>各停車駅の抽選に2秒かかります。</p>
 </section>
 <footer>OBAKYU RAILWAY · STATION ROULETTE</footer>
 </main>
@@ -77,7 +77,7 @@ draw.addEventListener("click",async()=>{
  status.textContent="抽選完了。よい旅を！";draw.disabled=false;copy.disabled=false;draw.textContent="もう一度回す";
 });
 copy.addEventListener("click",async()=>{
- if(finalStops.length<2)return;
+ if(finalStops.length<3)return;
  const text=`【尾羽急電鉄 ルーレット3】\n停車駅数：${finalStops.length}駅\n${finalStops.map((station,i)=>`${i+1}駅目：${station}`).join("\n")}`;
  try{await navigator.clipboard.writeText(text);status.textContent="結果をコピーしました！"}
  catch(e){const area=document.createElement("textarea");area.value=text;area.style.position="fixed";area.style.opacity="0";document.body.append(area);area.select();const ok=document.execCommand("copy");area.remove();status.textContent=ok?"結果をコピーしました！":"コピーできませんでした。"}
