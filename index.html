@@ -47,7 +47,7 @@ footer{text-align:center;color:#aaa;font-size:10px;letter-spacing:.09em;margin-t
 <div id="stops" class="stops" aria-label="抽選された停車駅"></div>
 <div class="actions"><button id="draw" type="button">ルーレットを回す</button><button id="copy" type="button" disabled>結果をコピー</button></div>
 <div class="status" id="status" role="status"></div>
-<p class="note">停車駅数を3〜6から抽選し、1駅目は指定された駅から選び、以降は重複なしで抽選します。<br>各停車駅の抽選に2秒かかります。</p>
+<p class="note">停車駅数を3〜6から抽選し、1駅目は指定駅から選びます。<br>各停車駅の抽選に2秒かかります。</p>
 </section>
 <footer>OBAKYU RAILWAY · STATION ROULETTE</footer>
 </main>
@@ -64,9 +64,13 @@ draw.addEventListener("click",async()=>{
  draw.disabled=true;copy.disabled=true;copy.textContent="結果をコピー";finalStops=[];stops.replaceChildren();countEl.classList.remove("placeholder");
  status.textContent="停車駅数を抽選中…";
  const countStarted=performance.now();
- while(performance.now()-countStarted<1000){countEl.textContent=`${pick([2,3,4,5,6])}駅`;await wait(70)}
- const total=pick([2,3,4,5,6]);countEl.textContent=`${total}駅`;
- const chosen=shuffle([...destinations]).slice(0,total);
+ while(performance.now()-countStarted<1000){countEl.textContent=`${pick([3,4,5,6])}駅`;await wait(70)}
+ const total=pick([3,4,5,6]);countEl.textContent=`${total}駅`;
+ const firstStopOptions=["尾羽原","高徳","千鳥","金田","金田新都心","北尾羽","本郷"];
+  // 赤堀アリーナは低確率（3%）で1駅目に選ばれる
+  const firstStop=Math.random()<0.03 ? "赤堀アリーナ" : pick(firstStopOptions);
+  const remaining=shuffle(destinations.filter(station=>station!==firstStop)).slice(0,total-1);
+  const chosen=[firstStop,...remaining];
  for(let i=0;i<total;i++){
   status.textContent=`${i+1}駅目を抽選中…`;
   const {card,name}=makeStopCard(i,total);stops.append(card);
@@ -77,7 +81,7 @@ draw.addEventListener("click",async()=>{
  status.textContent="抽選完了。よい旅を！";draw.disabled=false;copy.disabled=false;draw.textContent="もう一度回す";
 });
 copy.addEventListener("click",async()=>{
- if(finalStops.length<3)return;
+ if(finalStops.length<2)return;
  const text=`【尾羽急電鉄 ルーレット3】\n停車駅数：${finalStops.length}駅\n${finalStops.map((station,i)=>`${i+1}駅目：${station}`).join("\n")}`;
  try{await navigator.clipboard.writeText(text);status.textContent="結果をコピーしました！"}
  catch(e){const area=document.createElement("textarea");area.value=text;area.style.position="fixed";area.style.opacity="0";document.body.append(area);area.select();const ok=document.execCommand("copy");area.remove();status.textContent=ok?"結果をコピーしました！":"コピーできませんでした。"}
