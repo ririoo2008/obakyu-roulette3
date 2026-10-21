@@ -41,37 +41,35 @@ footer{text-align:center;color:#aaa;font-size:10px;letter-spacing:.09em;margin-t
 <main>
 <div class="eyebrow">OBAKYU RAILWAY · STATION ROULETTE</div>
 <h1>尾羽急電鉄 ルーレット3</h1>
-<p class="subtitle">5駅の停車駅を順番に抽選します</p>
+<p class="subtitle">停車駅数を決めて、その数だけ停車駅を抽選します</p>
 <section class="panel" aria-live="polite">
-<div class="lead"><div class="small">今回のルーレット</div><div class="lead-title">5駅を抽選</div></div>
-<div id="stops" class="stops" aria-label="抽選された停車駅">
-<div class="stop"><div class="stop-number">1駅目<small class="stop-terminal">（始発駅）</small></div><div class="stop-name placeholder">—</div></div>
-<div class="stop"><div class="stop-number">2駅目</div><div class="stop-name placeholder">—</div></div>
-<div class="stop"><div class="stop-number">3駅目</div><div class="stop-name placeholder">—</div></div>
-<div class="stop"><div class="stop-number">4駅目</div><div class="stop-name placeholder">—</div></div>
-<div class="stop"><div class="stop-number">5駅目<small class="stop-terminal">（終着駅）</small></div><div class="stop-name placeholder">—</div></div>
-</div>
+<div class="lead"><div class="small">停車駅数</div><div id="count" class="lead-title placeholder">—駅</div></div>
+<div id="stops" class="stops" aria-label="抽選された停車駅"></div>
 <div class="actions"><button id="draw" type="button">ルーレットを回す</button><button id="copy" type="button" disabled>結果をコピー</button></div>
 <div class="status" id="status" role="status"></div>
-<p class="note">指定された行き先から5駅を重複なしで選びます。<br>各停車駅の抽選に2秒かかります（全体で約10秒）。</p>
+<p class="note">停車駅数を2〜6から抽選し、行き先を重複なしで選びます。<br>各停車駅の抽選に2秒かかります。</p>
 </section>
 <footer>OBAKYU RAILWAY · STATION ROULETTE</footer>
 </main>
 <script>
 "use strict";
 const destinations=["尾羽原","井口","梅郷","雲中","安越","十川真砂橋","千峰","南雲谷","雲谷","長峰","西高徳","高徳","明神前","舞子台","紀田","穂","瀬舞","余美","千鳥","問屋町","問屋蔵前","赤堀大沢","赤堀","新赤堀","塚野","金田","百鳥","西百鳥","支線尾羽","北尾羽","新高徳","高徳整備場北","高徳空港","鵲橋","金田市","金田空港","金田新都心","新箱倉金田","南箱倉","上井口","参田町","東本郷","本郷","西問屋町","本郷神宮前","千鳥山道","奥千鳥","南千鳥","水橋","飛岡","垂岡","飛水竜田","南竜田","大原","新塚","飛水柏原","上金田","赤堀アリーナ","科学研究所跡"];
-const stops=document.getElementById("stops"),status=document.getElementById("status"),draw=document.getElementById("draw"),copy=document.getElementById("copy");
+const countEl=document.getElementById("count"),stops=document.getElementById("stops"),status=document.getElementById("status"),draw=document.getElementById("draw"),copy=document.getElementById("copy");
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function makeStopCard(index){const card=document.createElement("div");card.className="stop active";const number=document.createElement("div");number.className="stop-number";number.textContent=`${index+1}駅目`;if(index===0||index===4){const terminal=document.createElement("small");terminal.className="stop-terminal";terminal.textContent=index===0?"（始発駅）":"（終着駅）";number.append(terminal)}const name=document.createElement("div");name.className="stop-name";name.textContent="抽選中…";card.append(number,name);return {card,name}}
+function makeStopCard(index,total){const card=document.createElement("div");card.className="stop active";const number=document.createElement("div");number.className="stop-number";number.textContent=`${index+1}駅目`;if(index===0||index===total-1){const terminal=document.createElement("small");terminal.className="stop-terminal";terminal.textContent=index===0?"（始発駅）":"（終着駅）";number.append(terminal)}const name=document.createElement("div");name.className="stop-name";name.textContent="抽選中…";card.append(number,name);return {card,name}}
 let finalStops=[];
 draw.addEventListener("click",async()=>{
- draw.disabled=true;copy.disabled=true;copy.textContent="結果をコピー";status.textContent="停車駅を抽選中…";finalStops=[];stops.replaceChildren();
- const chosen=shuffle([...destinations]).slice(0,5);
- for(let i=0;i<5;i++){
+ draw.disabled=true;copy.disabled=true;copy.textContent="結果をコピー";finalStops=[];stops.replaceChildren();countEl.classList.remove("placeholder");
+ status.textContent="停車駅数を抽選中…";
+ const countStarted=performance.now();
+ while(performance.now()-countStarted<1000){countEl.textContent=`${pick([2,3,4,5,6])}駅`;await wait(70)}
+ const total=pick([2,3,4,5,6]);countEl.textContent=`${total}駅`;
+ const chosen=shuffle([...destinations]).slice(0,total);
+ for(let i=0;i<total;i++){
   status.textContent=`${i+1}駅目を抽選中…`;
-  const {card,name}=makeStopCard(i);stops.append(card);
+  const {card,name}=makeStopCard(i,total);stops.append(card);
   const started=performance.now();
   while(performance.now()-started<2000){name.textContent=pick(destinations);await wait(65)}
   name.textContent=chosen[i];card.classList.remove("active");finalStops.push(chosen[i]);
@@ -79,12 +77,13 @@ draw.addEventListener("click",async()=>{
  status.textContent="抽選完了。よい旅を！";draw.disabled=false;copy.disabled=false;draw.textContent="もう一度回す";
 });
 copy.addEventListener("click",async()=>{
- if(finalStops.length!==5)return;
- const text=`【尾羽急電鉄 ルーレット3】\n${finalStops.map((station,i)=>`${i+1}駅目：${station}`).join("\n")}`;
+ if(finalStops.length<2)return;
+ const text=`【尾羽急電鉄 ルーレット3】\n停車駅数：${finalStops.length}駅\n${finalStops.map((station,i)=>`${i+1}駅目：${station}`).join("\n")}`;
  try{await navigator.clipboard.writeText(text);status.textContent="結果をコピーしました！"}
  catch(e){const area=document.createElement("textarea");area.value=text;area.style.position="fixed";area.style.opacity="0";document.body.append(area);area.select();const ok=document.execCommand("copy");area.remove();status.textContent=ok?"結果をコピーしました！":"コピーできませんでした。"}
 });
 </script>
 </body>
 </html>
+
 
