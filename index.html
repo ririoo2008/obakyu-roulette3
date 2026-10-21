@@ -47,7 +47,7 @@ footer{text-align:center;color:#aaa;font-size:10px;letter-spacing:.09em;margin-t
 <div id="stops" class="stops" aria-label="抽選された停車駅"></div>
 <div class="actions"><button id="draw" type="button">ルーレットを回す</button><button id="copy" type="button" disabled>結果をコピー</button></div>
 <div class="status" id="status" role="status"></div>
-<p class="note">停車駅数を3〜6から抽選し、1駅目は指定駅から選びます。<br>各停車駅の抽選に2秒かかります。</p>
+<p class="note">停車駅数は3〜6駅から抽選し、4駅・5駅が少し当たりやすくなっています。<br>1駅目は尾羽原に固定し、2駅目以降は各駅2秒の抽選演出を行います。</p>
 </section>
 <footer>OBAKYU RAILWAY · STATION ROULETTE</footer>
 </main>
@@ -64,16 +64,17 @@ draw.addEventListener("click",async()=>{
  draw.disabled=true;copy.disabled=true;copy.textContent="結果をコピー";finalStops=[];stops.replaceChildren();countEl.classList.remove("placeholder");
  status.textContent="停車駅数を抽選中…";
  const countStarted=performance.now();
- while(performance.now()-countStarted<1000){countEl.textContent=`${pick([3,4,5,6])}駅`;await wait(70)}
- const total=pick([3,4,5,6]);countEl.textContent=`${total}駅`;
- const firstStop=pick(destinations);
- const remaining=shuffle(destinations.filter(station=>station!==firstStop)).slice(0,total-1);
-  const chosen=[firstStop,...remaining];
+ const countOptions=[3,4,4,5,5,6];
+ while(performance.now()-countStarted<1000){countEl.textContent=`${pick(countOptions)}駅`;await wait(70)}
+ const total=pick(countOptions);countEl.textContent=`${total}駅`;
+ const remaining=shuffle(destinations.filter(station=>station!=="尾羽原")).slice(0,total-1);
+ const chosen=["尾羽原",...remaining];
  for(let i=0;i<total;i++){
-  status.textContent=`${i+1}駅目を抽選中…`;
+  status.textContent=i===0?"1駅目は尾羽原に固定されています。":`${i+1}駅目を抽選中…`;
   const {card,name}=makeStopCard(i,total);stops.append(card);
+  if(i===0){name.textContent="尾羽原";card.classList.remove("active");finalStops.push("尾羽原");continue;}
   const started=performance.now();
-  while(performance.now()-started<2000){name.textContent=pick(destinations);await wait(65)}
+  while(performance.now()-started<2000){name.textContent=pick(destinations.filter(station=>station!=="尾羽原"));await wait(65)}
   name.textContent=chosen[i];card.classList.remove("active");finalStops.push(chosen[i]);
  }
  status.textContent="抽選完了。よい旅を！";draw.disabled=false;copy.disabled=false;draw.textContent="もう一度回す";
