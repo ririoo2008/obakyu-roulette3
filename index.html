@@ -66,10 +66,8 @@ draw.addEventListener("click",async()=>{
  const countStarted=performance.now();
  while(performance.now()-countStarted<1000){countEl.textContent=`${pick([3,4,5,6])}駅`;await wait(70)}
  const total=pick([3,4,5,6]);countEl.textContent=`${total}駅`;
- const firstStopOptions=["尾羽原","高徳","千鳥","金田","金田新都心","北尾羽","本郷"];
-  // 赤堀アリーナは低確率（3%）で1駅目に選ばれる
-  const firstStop=Math.random()<0.03 ? "赤堀アリーナ" : pick(firstStopOptions);
-  const remaining=shuffle(destinations.filter(station=>station!==firstStop)).slice(0,total-1);
+ const firstStop=pick(destinations);
+ const remaining=shuffle(destinations.filter(station=>station!==firstStop)).slice(0,total-1);
   const chosen=[firstStop,...remaining];
  for(let i=0;i<total;i++){
   status.textContent=`${i+1}駅目を抽選中…`;
