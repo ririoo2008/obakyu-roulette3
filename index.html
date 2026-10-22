@@ -47,7 +47,7 @@ footer{text-align:center;color:#aaa;font-size:10px;letter-spacing:.09em;margin-t
 <div id="stops" class="stops" aria-label="抽選された停車駅"></div>
 <div class="actions"><button id="draw" type="button">ルーレットを回す</button><button id="copy" type="button" disabled>結果をコピー</button></div>
 <div class="status" id="status" role="status"></div>
-<p class="note">停車駅数は4〜7駅から抽選し、7駅は低確率で当選します。<br>1駅目は尾羽原に固定し、2駅目以降は各駅2秒の抽選演出を行います。</p>
+<p class="note">停車駅数は4〜7駅から抽選し、7駅は低確率で当選します。<br>1〜7駅目は各駅2秒の抽選演出を行います。</p>
 </section>
 <footer>OBAKYU RAILWAY · STATION ROULETTE</footer>
 </main>
@@ -58,6 +58,7 @@ const countEl=document.getElementById("count"),stops=document.getElementById("st
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function pickFirstStop(){const roll=Math.random()*100;if(roll<50)return "尾羽原";if(roll<97)return "安越";if(roll<99.5)return "赤堀アリーナ";return "科学研究所跡"}
 function makeStopCard(index,total){const card=document.createElement("div");card.className="stop active";const number=document.createElement("div");number.className="stop-number";number.textContent=`${index+1}駅目`;if(index===0||index===total-1){const terminal=document.createElement("small");terminal.className="stop-terminal";terminal.textContent=index===0?"（始発駅）":"（終着駅）";number.append(terminal)}const name=document.createElement("div");name.className="stop-name";name.textContent="抽選中…";card.append(number,name);return {card,name}}
 let finalStops=[];
 draw.addEventListener("click",async()=>{
@@ -67,14 +68,14 @@ draw.addEventListener("click",async()=>{
  const countOptions=[4,4,5,5,6,6,7];
  while(performance.now()-countStarted<1000){countEl.textContent=`${pick(countOptions)}駅`;await wait(70)}
  const total=pick(countOptions);countEl.textContent=`${total}駅`;
- const remaining=shuffle(destinations.filter(station=>station!=="尾羽原")).slice(0,total-1);
- const chosen=["尾羽原",...remaining];
+ const first=pickFirstStop();
+ const remaining=shuffle(destinations.filter(station=>!(["赤堀アリーナ","科学研究所跡"].includes(station))&&station!==first)).slice(0,total-1);
+ const chosen=[first,...remaining];
  for(let i=0;i<total;i++){
-  status.textContent=i===0?"1駅目は尾羽原に固定されています。":`${i+1}駅目を抽選中…`;
+  status.textContent=`${i+1}駅目を抽選中…`;
   const {card,name}=makeStopCard(i,total);stops.append(card);
-  if(i===0){name.textContent="尾羽原";card.classList.remove("active");finalStops.push("尾羽原");continue;}
   const started=performance.now();
-  while(performance.now()-started<2000){name.textContent=pick(destinations.filter(station=>station!=="尾羽原"));await wait(65)}
+  while(performance.now()-started<2000){name.textContent=pick(destinations.filter(station=>!["赤堀アリーナ","科学研究所跡"].includes(station)));await wait(65)}
   name.textContent=chosen[i];card.classList.remove("active");finalStops.push(chosen[i]);
  }
  status.textContent="抽選完了。よい旅を！";draw.disabled=false;copy.disabled=false;draw.textContent="もう一度回す";
