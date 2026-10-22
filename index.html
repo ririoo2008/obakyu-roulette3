@@ -58,7 +58,7 @@ const countEl=document.getElementById("count"),stops=document.getElementById("st
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function pickFirstStop(){const roll=Math.random()*100;if(roll<50)return "尾羽原";if(roll<97)return "安越";if(roll<99.5)return "赤堀アリーナ";return "科学研究所跡"}
+function pickFirstStop(){const roll=Math.random()*100;if(roll<50)return "尾羽原";if(roll<80)return "安越";if(roll<97)return "千鳥";if(roll<99.5)return "赤堀アリーナ";return "科学研究所跡"}
 function makeStopCard(index,total){const card=document.createElement("div");card.className="stop active";const number=document.createElement("div");number.className="stop-number";number.textContent=`${index+1}駅目`;if(index===0||index===total-1){const terminal=document.createElement("small");terminal.className="stop-terminal";terminal.textContent=index===0?"（始発駅）":"（終着駅）";number.append(terminal)}const name=document.createElement("div");name.className="stop-name";name.textContent="抽選中…";card.append(number,name);return {card,name}}
 let finalStops=[];
 draw.addEventListener("click",async()=>{
