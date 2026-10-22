@@ -63,14 +63,15 @@ function makeStopCard(index,total){const card=document.createElement("div");card
 let finalStops=[];
 draw.addEventListener("click",async()=>{
  draw.disabled=true;copy.disabled=true;copy.textContent="結果をコピー";finalStops=[];stops.replaceChildren();countEl.classList.remove("placeholder");
+ const specialPattern=Math.random()<0.001;
  status.textContent="停車駅数を抽選中…";
  const countStarted=performance.now();
  const countOptions=[4,4,5,5,6,6,7];
  while(performance.now()-countStarted<1000){countEl.textContent=`${pick(countOptions)}駅`;await wait(70)}
- const total=pick(countOptions);countEl.textContent=`${total}駅`;
- const first=pickFirstStop();
+ const total=specialPattern?7:pick(countOptions);countEl.textContent=`${total}駅`;
+ const first=specialPattern?null:pickFirstStop();
  const remaining=shuffle(destinations.filter(station=>!(["赤堀アリーナ","科学研究所跡"].includes(station))&&station!==first)).slice(0,total-1);
- const chosen=[first,...remaining];
+ const chosen=specialPattern?["尾羽原","赤堀アリーナ","新高徳","新塚","高徳整備場北","大原","高徳空港"]:[first,...remaining];
  for(let i=0;i<total;i++){
   status.textContent=`${i+1}駅目を抽選中…`;
   const {card,name}=makeStopCard(i,total);stops.append(card);
